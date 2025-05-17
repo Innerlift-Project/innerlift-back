@@ -24,8 +24,7 @@ export class UserService {
     if (!userByEmail) {
       throw new ConflictException('User not found');
     }
-    const user = new UserDto(userByEmail);
-    return user;
+    return userByEmail;
   }
 
   async findUserById(id: string) {

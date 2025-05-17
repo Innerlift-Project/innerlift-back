@@ -1,7 +1,8 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDTO } from './dto/update-user.dto';
-
+import * as bcrypt from 'bcrypt';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -9,11 +10,15 @@ export class UserController {
 
     @Post()
     async createUser(@Body() data: {fullName: string, email: string, password: string }) {
-            await this.userService.createUser({
-                ...data
-        })
+        const hashedPassword = await bcrypt.hash(data.password, 10);    
+        await this.userService.createUser({
+                fullName: data.fullName,
+                email: data.email,
+                password: hashedPassword
+        });
     }
 
+    @UseGuards(JwtAuthGuard)
     @Get()
     async findAllUser() {
         return await this.userService.findAllUser();      
