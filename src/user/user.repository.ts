@@ -39,12 +39,15 @@ export class UserRepository {
         })
     }
 
-    async updateUser(id: string, data: CreateUserDTO) {
+    async updateUser(id: string, data: CreateUserDTO, profilePicture?: string) {
         return await this.prisma.user.update({
             where: {
                 id: id,
             },
-            data: data,
+            data: {
+                ...data,
+                ...(profilePicture && { profilePicture }),
+            }
         });
     }
 

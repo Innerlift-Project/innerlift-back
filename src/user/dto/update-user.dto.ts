@@ -32,6 +32,8 @@ export class UpdateUserDTO {
 
   @ApiProperty({ example: pronounsEnum })
   pronouns?: 'He_Him' | 'She_Her' | 'They_Them' | 'Other' | 'Prefer_Not_To_Say';
+
   @ApiProperty({ example: 'Tenho x anos, gosto de jogar e assistir séries.' })
   bio?: string;
+
 }

@@ -52,11 +52,11 @@ export class UserService {
     return users.map((user) => new UserDto(user));
   }
 
-  async updateUser(id: string, data: UpdateUserDTO) {
+  async updateUser(id: string, data: UpdateUserDTO, profilePicture?: string) {
     const user = await this.userRepository.findyUserById(id);
     if (!user) {
       throw new ConflictException('User not found');
     }
-    return await this.userRepository.updateUser(id, data);
+    return await this.userRepository.updateUser(id, data, profilePicture);
   }
 }

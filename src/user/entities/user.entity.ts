@@ -7,4 +7,5 @@ export class User {
     pronouns: 'He_Him' | 'She_Her' | 'They_Them' | 'Other' | 'Prefer_Not_To_Say';
     createdAt: Date;
     bio: string;
+    profilePicture: string;
 }
