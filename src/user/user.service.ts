@@ -5,18 +5,17 @@ import * as bcrypt from 'bcrypt';
 import { UserRepository } from './user.repository';
 import { UserDto } from './dto/user.dto';
 import { UpdateUserDTO } from './dto/update-user.dto';
-
 @Injectable()
 export class UserService {
   constructor(private readonly userRepository: UserRepository) {}
 
-  async createUser(data: CreateUserDTO) {
+  async createUser(data: CreateUserDTO){
     const existingUser = await this.userRepository.findUserByEmail(data.email);
     if (existingUser) {
       throw new ConflictException('User already exists');
     }
-
-    return await this.userRepository.createUser(data);
+    await this.userRepository.createUser(data);
+    return { message: 'User created successfully' };
   }
 
   async findUserByEmail(email: string) {

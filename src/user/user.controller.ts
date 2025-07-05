@@ -20,14 +20,15 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { UpdateUserWithFileDTO } from './dto/update-user-with-file';
+import { AuthService } from 'src/auth/auth.service';
 
 @ApiTags('users')
 @Controller('users')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService, private readonly authService: AuthService) {}
 
   @Post()
-  @ApiOperation({ summary: 'crate a user' })
+  @ApiOperation({ summary: 'create a user' })
   async createUser(@Body() data: CreateUserDTO) {
     const hashedPassword = await bcrypt.hash(data.password, 10);
     await this.userService.createUser({
@@ -35,6 +36,9 @@ export class UserController {
       email: data.email,
       password: hashedPassword,
     });
+    // Busca o usuário recém-criado para pegar o id
+    const user = await this.userService.findUserByEmail(data.email);
+    return this.authService.login(user);
   }
 
   @ApiOperation({ summary: 'find all users' })
