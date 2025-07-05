@@ -6,6 +6,15 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+
+  app.enableCors({
+    origin: true, // Permite qualquer origem
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: '*',
+    credentials: true,
+  });
+
+
   const config = new DocumentBuilder()
     .setTitle('Innerlift API')
     .setDescription('Guia das rotas da API do projeto Innerlift.')
@@ -15,6 +24,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('doc', app, document);
 
+  
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
