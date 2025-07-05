@@ -23,6 +23,7 @@ model User {
   pronouns  PronounsEnum?
   createdAt DateTime @default(now())
   bio      String?
+  profilePicture String?
   
 }
 

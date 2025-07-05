@@ -6,22 +6,29 @@ import {
   Param,
   Post,
   Put,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDTO } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CreateUserDTO } from './dto/create-user.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
+import { UpdateUserWithFileDTO } from './dto/update-user-with-file';
+import { AuthService } from 'src/auth/auth.service';
 
 @ApiTags('users')
 @Controller('users')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService, private readonly authService: AuthService) {}
 
   @Post()
-  @ApiOperation({ summary: 'crate a user' })
+  @ApiOperation({ summary: 'create a user' })
   async createUser(@Body() data: CreateUserDTO) {
     const hashedPassword = await bcrypt.hash(data.password, 10);
     await this.userService.createUser({
@@ -29,6 +36,9 @@ export class UserController {
       email: data.email,
       password: hashedPassword,
     });
+    // Busca o usuário recém-criado para pegar o id
+    const user = await this.userService.findUserByEmail(data.email);
+    return this.authService.login(user);
   }
 
   @ApiOperation({ summary: 'find all users' })
@@ -57,8 +67,29 @@ export class UserController {
   }
 
   @ApiOperation({ summary: 'update a user' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({ type: UpdateUserWithFileDTO })
   @Put(':id')
-  async updateUser(@Param('id') id: string, @Body() data: UpdateUserDTO) {
-    return await this.userService.updateUser(id, data);
+  @UseInterceptors(
+    FileInterceptor('profilePicture', {
+      storage: diskStorage({
+        destination: './uploads/profile-pictures',
+        filename: (req, file, cb) => {
+          const uniqueName = `${Date.now()}${extname(file.originalname)}`;
+          cb(null, uniqueName);
+        },
+      }),
+    }),
+  )
+  async updateUser(
+    @Param('id') id: string,
+    @UploadedFile() file: import('multer').File,
+    @Body() data: UpdateUserWithFileDTO,
+  ) {
+    console.log('File received:', file);
+    const profilePicture = file
+      ? `uploads/profile-pictures/${file.filename}`
+      : undefined;
+    return await this.userService.updateUser(id, data, profilePicture);
   }
 }
